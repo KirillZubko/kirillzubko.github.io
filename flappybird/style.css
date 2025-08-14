@@ -1,0 +1,117 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(to bottom, #87CEEB 0%, #98FB98 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    overflow: hidden;
+}
+
+.game-container {
+    position: relative;
+    border: 3px solid #333;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+    background: #87CEEB;
+}
+
+#gameCanvas {
+    display: block;
+    background: linear-gradient(to bottom, #87CEEB 0%, #98FB98 70%);
+}
+
+.ui-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.screen {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    pointer-events: all;
+}
+
+.screen h1 {
+    color: #ff6b35;
+    font-size: 2.5em;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.screen h2 {
+    color: #ff6b35;
+    font-size: 2em;
+    margin-bottom: 15px;
+}
+
+.screen p {
+    color: #333;
+    margin-bottom: 20px;
+    font-size: 1.1em;
+}
+
+button {
+    background: #ff6b35;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    font-size: 1.2em;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+button:hover {
+    background: #e55a2b;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.hidden {
+    display: none !important;
+}
+
+#score {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 2.5em;
+    font-weight: bold;
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    pointer-events: none;
+}
+
+#gameUI {
+    pointer-events: none;
+}
+
+#finalScore, #bestScore {
+    color: #ff6b35;
+    font-weight: bold;
+}
