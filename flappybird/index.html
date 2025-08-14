@@ -1,1 +1,31 @@
-
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flappy Bird Clone</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <canvas id="gameCanvas" width="400" height="600"></canvas>
+        <div class="ui-overlay">
+            <div id="startScreen" class="screen">
+                <h1>Flappy Bird</h1>
+                <p>Нажми ПРОБЕЛ или кликни для прыжка</p>
+                <button id="startBtn">Начать игру</button>
+            </div>
+            <div id="gameOverScreen" class="screen hidden">
+                <h2>Игра окончена!</h2>
+                <p>Счёт: <span id="finalScore">0</span></p>
+                <p>Лучший результат: <span id="bestScore">0</span></p>
+                <button id="restartBtn">Играть снова</button>
+            </div>
+            <div id="gameUI" class="hidden">
+                <div id="score">0</div>
+            </div>
+        </div>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>
