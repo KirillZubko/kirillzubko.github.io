@@ -34,8 +34,12 @@
     grid-template-rows: repeat(4, 80px);
     gap: 10px;
     margin-top: 20px;
+    position: relative;
   }
   .tile {
+    position: absolute;
+    width: 80px;
+    height: 80px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -43,7 +47,18 @@
     font-size: 24px;
     border-radius: 10px;
     color: #fff;
+    transition: all 0.2s ease;
     user-select: none;
+  }
+  button {
+    margin-top: 10px;
+    padding: 5px 15px;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    background: #fff;
+    color: #333;
+    cursor: pointer;
   }
 </style>
 </head>
@@ -53,10 +68,14 @@
   <div class="score">Score: <span id="score">0</span></div>
   <div class="best">Best: <span id="best">0</span></div>
 </div>
-<div id="grid"></div>
+<div id="grid" style="width:360px;height:360px;"></div>
+<button onclick="restartGame()">Начать заново</button>
+
 <script>
 const SIZE = 4;
+const TILE_SIZE = 90; // 80px + 10px gap
 let grid = [];
+let tiles = [];
 let score = 0;
 let best = localStorage.getItem('best') || 0;
 document.getElementById('best').innerText = best;
@@ -78,6 +97,9 @@ const colors = {
 
 function initGrid() {
   grid = Array(SIZE).fill().map(() => Array(SIZE).fill(0));
+  tiles = [];
+  score = 0;
+  document.getElementById('score').innerText = score;
   addTile();
   addTile();
   drawGrid();
@@ -86,18 +108,17 @@ function initGrid() {
 function drawGrid() {
   const gridDiv = document.getElementById('grid');
   gridDiv.innerHTML = '';
-  for (let r = 0; r < SIZE; r++) {
-    for (let c = 0; c < SIZE; c++) {
-      const val = grid[r][c];
-      const tile = document.createElement('div');
-      tile.className = 'tile';
-      tile.textContent = val ? val : '';
-      const bg = colors[val] || colors['super'];
-      tile.style.backgroundColor = bg;
-      tile.style.color = val <= 4 ? '#776e65' : '#fff';
-      gridDiv.appendChild(tile);
-    }
-  }
+  tiles.forEach(t => {
+    const div = document.createElement('div');
+    div.className = 'tile';
+    div.style.left = `${t.col*(TILE_SIZE)}px`;
+    div.style.top = `${t.row*(TILE_SIZE)}px`;
+    div.style.backgroundColor = colors[t.value] || colors['super'];
+    div.style.color = t.value<=4?'#776e65':'#fff';
+    div.textContent = t.value;
+    div.style.transition = 'all 0.2s ease';
+    gridDiv.appendChild(div);
+  });
   document.getElementById('score').innerText = score;
   document.getElementById('best').innerText = best;
 }
@@ -109,10 +130,12 @@ function addTile() {
       if (grid[r][c] === 0) empty.push([r,c]);
   if (empty.length === 0) return;
   const [r,c] = empty[Math.floor(Math.random()*empty.length)];
-  grid[r][c] = Math.random() < 0.9 ? 2 : 4;
+  const value = Math.random() < 0.9 ? 2 : 4;
+  grid[r][c] = value;
+  tiles.push({row:r, col:c, value});
 }
 
-function slide(row) {
+function slideRow(row) {
   const arr = row.filter(v => v);
   for (let i = 0; i < arr.length-1; i++) {
     if (arr[i] === arr[i+1]) {
@@ -137,12 +160,21 @@ function rotateGrid(clockwise=true) {
 }
 
 function move(dir) {
-  let old = grid.map(r=>r.slice());
-  if(dir==='up'){ rotateGrid(false); for(let i=0;i<SIZE;i++) grid[i]=slide(grid[i]); rotateGrid(); }
-  if(dir==='down'){ rotateGrid(false); for(let i=0;i<SIZE;i++) grid[i]=slide(grid[i].reverse()).reverse(); rotateGrid(); }
-  if(dir==='left'){ for(let i=0;i<SIZE;i++) grid[i]=slide(grid[i]); }
-  if(dir==='right'){ for(let i=0;i<SIZE;i++) grid[i]=slide(grid[i].reverse()).reverse(); }
-  if(JSON.stringify(old) !== JSON.stringify(grid)) { addTile(); drawGrid(); checkGameOver(); }
+  const oldGrid = grid.map(r=>r.slice());
+  if(dir==='up'){ rotateGrid(false); for(let i=0;i<SIZE;i++) grid[i]=slideRow(grid[i]); rotateGrid(); }
+  if(dir==='down'){ rotateGrid(false); for(let i=0;i<SIZE;i++) grid[i]=slideRow(grid[i].reverse()).reverse(); rotateGrid(); }
+  if(dir==='left'){ for(let i=0;i<SIZE;i++) grid[i]=slideRow(grid[i]); }
+  if(dir==='right'){ for(let i=0;i<SIZE;i++) grid[i]=slideRow(grid[i].reverse()).reverse(); }
+  if(JSON.stringify(oldGrid) !== JSON.stringify(grid)) { updateTiles(); addTile(); drawGrid(); checkGameOver(); }
+}
+
+function updateTiles() {
+  tiles = [];
+  for (let r=0;r<SIZE;r++){
+    for (let c=0;c<SIZE;c++){
+      if(grid[r][c]!==0) tiles.push({row:r,col:c,value:grid[r][c]});
+    }
+  }
 }
 
 function checkGameOver() {
@@ -182,6 +214,10 @@ document.addEventListener('touchend', e=>{
     else if(dy<-30) move('up');
   }
 });
+
+function restartGame() {
+  initGrid();
+}
 
 initGrid();
 </script>
