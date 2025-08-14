@@ -36,13 +36,13 @@ body {
 .tile {
     width: 70px;
     height: 70px;
-    background: rgba(255,255,255,0.3);
     display: flex;
     justify-content: center;
     align-items: center;
     font-size: 24px;
     font-weight: bold;
     border-radius: 5px;
+    color: white;
 }
 #controls {
     margin-top: 10px;
@@ -88,6 +88,24 @@ const scoreSpan = document.getElementById('score');
 const bestSpan = document.getElementById('best');
 bestSpan.textContent = best;
 
+// Цвета плиток
+function getTileColor(val){
+    const colors = {
+        2: 'rgba(255,255,255,0.3)',
+        4: 'rgba(255,255,255,0.4)',
+        8: 'rgba(255,200,150,0.5)',
+        16: 'rgba(255,170,120,0.6)',
+        32: 'rgba(255,140,90,0.7)',
+        64: 'rgba(255,110,60,0.8)',
+        128: 'rgba(255,80,30,0.85)',
+        256: 'rgba(240,60,20,0.9)',
+        512: 'rgba(220,50,20,0.9)',
+        1024: 'rgba(200,40,20,0.95)',
+        2048: 'rgba(180,30,10,0.95)'
+    };
+    return colors[val] || 'rgba(255,255,255,0.5)';
+}
+
 // Инициализация доски
 function initBoard() {
     board = Array.from({length: boardSize}, () => Array(boardSize).fill(0));
@@ -116,6 +134,7 @@ function updateBoard(){
             let tile = document.createElement('div');
             tile.classList.add('tile');
             if(board[i][j]!==0) tile.textContent = board[i][j];
+            tile.style.background = getTileColor(board[i][j]);
             boardDiv.appendChild(tile);
         }
     }
@@ -158,8 +177,7 @@ function move(direction){
         case 'up':
             board = rotate(board);
             for(let i=0;i<boardSize;i++){
-                let newCol = slide(board[i]);
-                board[i] = newCol;
+                board[i] = slide(board[i]);
             }
             board = rotate(board); board = rotate(board); board = rotate(board);
             break;
@@ -189,6 +207,19 @@ function move(direction){
 
     if(moved) addRandomTile();
     updateBoard();
+    if(!canMove()) setTimeout(()=>alert('Игра окончена! Ваш счет: '+score), 50);
+}
+
+// Проверка, есть ли доступные ходы
+function canMove(){
+    for(let i=0;i<boardSize;i++){
+        for(let j=0;j<boardSize;j++){
+            if(board[i][j]===0) return true;
+            if(i<boardSize-1 && board[i][j]===board[i+1][j]) return true;
+            if(j<boardSize-1 && board[i][j]===board[i][j+1]) return true;
+        }
+    }
+    return false;
 }
 
 // Кнопки
