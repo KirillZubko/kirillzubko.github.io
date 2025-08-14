@@ -5,58 +5,58 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>2048</title>
 <style>
-    body {
-        margin: 0;
-        font-family: Arial, sans-serif;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-    }
-    #game-container {
-        width: 320px;
-        text-align: center;
-        color: white;
-    }
-    #scoreboard {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 10px;
-        font-size: 1.2em;
-    }
-    #board {
-        display: grid;
-        grid-template-columns: repeat(4, 70px);
-        grid-gap: 5px;
-        background: rgba(255,255,255,0.1);
-        padding: 5px;
-        border-radius: 10px;
-    }
-    .tile {
-        width: 70px;
-        height: 70px;
-        background: rgba(255,255,255,0.3);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        font-size: 24px;
-        font-weight: bold;
-        border-radius: 5px;
-    }
-    #controls {
-        margin-top: 10px;
-    }
-    .btn {
-        width: 60px;
-        height: 60px;
-        font-size: 24px;
-        margin: 5px;
-        border: none;
-        border-radius: 10px;
-        background: rgba(255,255,255,0.2);
-        color: white;
-    }
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+#game-container {
+    width: 320px;
+    text-align: center;
+    color: white;
+}
+#scoreboard {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 1.2em;
+}
+#board {
+    display: grid;
+    grid-template-columns: repeat(4, 70px);
+    grid-gap: 5px;
+    background: rgba(255,255,255,0.1);
+    padding: 5px;
+    border-radius: 10px;
+}
+.tile {
+    width: 70px;
+    height: 70px;
+    background: rgba(255,255,255,0.3);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    font-weight: bold;
+    border-radius: 5px;
+}
+#controls {
+    margin-top: 10px;
+}
+.btn {
+    width: 60px;
+    height: 60px;
+    font-size: 24px;
+    margin: 5px;
+    border: none;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.2);
+    color: white;
+}
 </style>
 </head>
 <body>
@@ -83,37 +83,32 @@ const boardSize = 4;
 let board = [];
 let score = 0;
 let best = localStorage.getItem('best') || 0;
-
 const boardDiv = document.getElementById('board');
 const scoreSpan = document.getElementById('score');
 const bestSpan = document.getElementById('best');
 bestSpan.textContent = best;
 
-// Инициализация пустой доски
+// Инициализация доски
 function initBoard() {
-    board = [];
-    for(let i=0;i<boardSize;i++){
-        board.push(Array(boardSize).fill(0));
-    }
+    board = Array.from({length: boardSize}, () => Array(boardSize).fill(0));
     addRandomTile();
     addRandomTile();
+    score = 0;
     updateBoard();
 }
 
-// Добавление новой плитки
+// Добавление случайной плитки
 function addRandomTile(){
     let empty = [];
-    for(let i=0;i<boardSize;i++){
-        for(let j=0;j<boardSize;j++){
+    for(let i=0;i<boardSize;i++)
+        for(let j=0;j<boardSize;j++)
             if(board[i][j]===0) empty.push([i,j]);
-        }
-    }
     if(empty.length===0) return;
     let [x,y] = empty[Math.floor(Math.random()*empty.length)];
-    board[x][y] = Math.random()<0.9?2:4;
+    board[x][y] = Math.random()<0.9 ? 2 : 4;
 }
 
-// Обновление доски на экране
+// Обновление доски
 function updateBoard(){
     boardDiv.innerHTML = '';
     for(let i=0;i<boardSize;i++){
@@ -128,91 +123,81 @@ function updateBoard(){
     bestSpan.textContent = best;
 }
 
-// Сдвиг и объединение
+// Сдвиг и объединение для одной строки
 function slide(row){
-    let arr = row.filter(val=>val);
-    for(let i=0;i<arr.length-1;i++){
+    let arr = row.filter(val => val);
+    let newRow = [];
+    let skip = false;
+    for(let i=0;i<arr.length;i++){
+        if(skip){ skip=false; continue; }
         if(arr[i]===arr[i+1]){
-            arr[i]*=2;
-            score+=arr[i];
+            newRow.push(arr[i]*2);
+            score += arr[i]*2;
             if(score>best) {
-                best=score;
+                best = score;
                 localStorage.setItem('best', best);
             }
-            arr[i+1]=0;
+            skip=true;
+        } else {
+            newRow.push(arr[i]);
         }
     }
-    arr = arr.filter(val=>val);
-    while(arr.length<boardSize) arr.push(0);
-    return arr;
+    while(newRow.length<boardSize) newRow.push(0);
+    return newRow;
 }
 
 // Движение
 function move(direction){
-    let rotated = false;
     let moved = false;
+    function copyBoard(){ return board.map(r=>r.slice()); }
+    let prevBoard = copyBoard();
 
-    function rotateBoard(){
-        let newBoard = [];
-        for(let i=0;i<boardSize;i++){
-            newBoard.push([]);
-            for(let j=0;j<boardSize;j++){
-                newBoard[i][j]=board[j][i];
-            }
-        }
-        board = newBoard;
-    }
+    const rotate = (b) => b[0].map((_,i)=>b.map(row=>row[i]));
 
     switch(direction){
         case 'up':
-            rotateBoard();
+            board = rotate(board);
             for(let i=0;i<boardSize;i++){
-                let col = board[i].slice();
-                let newCol = slide(col);
-                if(col.toString()!==newCol.toString()) moved=true;
-                board[i]=newCol;
+                let newCol = slide(board[i]);
+                board[i] = newCol;
             }
-            rotateBoard();
+            board = rotate(board); board = rotate(board); board = rotate(board);
             break;
         case 'down':
-            rotateBoard();
+            board = rotate(board);
             for(let i=0;i<boardSize;i++){
-                let col = board[i].slice().reverse();
-                let newCol = slide(col).reverse();
-                if(col.reverse().toString()!==newCol.toString()) moved=true;
-                board[i]=newCol;
+                board[i] = slide(board[i].slice().reverse()).reverse();
             }
-            rotateBoard();
+            board = rotate(board); board = rotate(board); board = rotate(board);
             break;
         case 'left':
             for(let i=0;i<boardSize;i++){
-                let row = board[i].slice();
-                let newRow = slide(row);
-                if(row.toString()!==newRow.toString()) moved=true;
-                board[i]=newRow;
+                board[i] = slide(board[i]);
             }
             break;
         case 'right':
             for(let i=0;i<boardSize;i++){
-                let row = board[i].slice().reverse();
-                let newRow = slide(row).reverse();
-                if(row.reverse().toString()!==newRow.toString()) moved=true;
-                board[i]=newRow;
+                board[i] = slide(board[i].slice().reverse()).reverse();
             }
             break;
+    }
+
+    // Проверка изменений
+    for(let i=0;i<boardSize;i++){
+        if(board[i].toString()!==prevBoard[i].toString()) moved=true;
     }
 
     if(moved) addRandomTile();
     updateBoard();
 }
 
-// Кнопки управления
+// Кнопки
 document.getElementById('up').addEventListener('click', ()=>move('up'));
 document.getElementById('down').addEventListener('click', ()=>move('down'));
 document.getElementById('left').addEventListener('click', ()=>move('left'));
 document.getElementById('right').addEventListener('click', ()=>move('right'));
 
-// Свайпы для мобильных
+// Свайпы
 let touchStartX=0, touchStartY=0;
 document.addEventListener('touchstart', e=>{
     touchStartX = e.changedTouches[0].screenX;
